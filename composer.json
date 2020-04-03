@@ -1,0 +1,21 @@
+{
+    "name": "torinit/awscognito",
+    "description": "User Authentication with AWS cognito",
+    "license": "MIT",
+    "require": {
+        "aws/aws-sdk-php": "^3.93"
+    },    
+    "authors": [
+        {
+            "name": "Vivek Gundla",
+            "email": "vivek@torinit.ca"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "torinit\\awscognito\\": "src/"
+        }
+    },
+    "require": {}
+}
