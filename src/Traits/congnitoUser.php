@@ -41,6 +41,8 @@ trait congnitoUser
                 if ($result == 1) {
                     $params = app()->make(CognitoClient::class)->getUser($data['email']);
                     $user->update(['username' => $params->get('Username')]);
+                }else{
+                    return $this->sendResponse(false, 'Something went wrong, Try again.', $result, 400);
                 }
                 DB::commit();
                 return $this->sendResponse(true, 'User created successfully', $result, 200);
@@ -71,7 +73,7 @@ trait congnitoUser
             User::where('email', $data['email'])->update(['status' => 1]);
             return $this->sendResponse(true, 'User email verified successfully', [], 200); 
         }else{
-            return $this->sendResponse(true, 'error', $response, 400);
+            return $this->sendResponse(false, 'error', $response, 400);
         }
 
         return false;
@@ -90,7 +92,7 @@ trait congnitoUser
         if (is_array($result)) {
             return $this->sendResponse(true, 'User logged in successfully.', $result, 200);   
         }else{
-            return $this->sendResponse(true, 'Error', $result, 400);
+            return $this->sendResponse(false, 'Error', $result, 400);
         }
     }
 
@@ -107,8 +109,7 @@ trait congnitoUser
     {
 
         $result = app()->make(CognitoClient::class)->resendConfirmationCode($email);
-
-        if (isset($result) && is_array($result)) {
+        if (isset($result)) {
             return $this->sendResponse(true, 'Verification code sent successfully.', [], 200);
         }else{
             return $this->sendResponse(false, 'error', $result, 400);

@@ -1,6 +1,7 @@
 {
     "name": "torinit/awscognito",
     "description": "User Authentication with AWS cognito",
+    "type": "project",
     "license": "MIT",
     "require": {
         "aws/aws-sdk-php": "^3.93"
@@ -16,6 +17,5 @@
         "psr-4": {
             "torinit\\awscognito\\": "src/"
         }
-    },
-    "require": {}
+    }
 }
