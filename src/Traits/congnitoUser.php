@@ -6,7 +6,7 @@ use Validator;
 use DB;
 trait congnitoUser
 {
-    public function sendResponse($status, $message, $data = [], $code = 200)
+    public function sendResponses($status, $message, $data = [], $code = 200)
     {
         $response = [
             'status_code' => $code,
@@ -31,7 +31,7 @@ trait congnitoUser
 
             $validator = Validator::make($data, $rules);
             if ($validator->fails()) {
-                return $this->sendResponse(false, $validator->getMessageBag()->first(), array(), 400);
+                return $this->sendResponses(false, $validator->getMessageBag()->first(), array(), 400);
             }
             DB::beginTransaction();
             $user = User::create($data);   
@@ -42,16 +42,16 @@ trait congnitoUser
                     $params = app()->make(CognitoClient::class)->getUser($data['email']);
                     $user->update(['username' => $params->get('Username')]);
                 }else{
-                    return $this->sendResponse(false, 'Something went wrong, Try again.', $result, 400);
+                    return $this->sendResponses(false, 'Something went wrong, Try again.', $result, 400);
                 }
                 DB::commit();
-                return $this->sendResponse(true, 'User created successfully', $result, 200);
+                return $this->sendResponses(true, 'User created successfully', $result, 200);
             }
 
         } catch (Exception $e) {
             
             DB::rollBack();
-            return $this->sendResponse(false, $e->getMessage(), array(), 400);
+            return $this->sendResponses(false, $e->getMessage(), array(), 400);
         }
     }
 
@@ -65,15 +65,15 @@ trait congnitoUser
 
         $validator = Validator::make($data, $rules);
         if ($validator->fails()) {
-            return $this->sendResponse(false, $validator->getMessageBag()->first(), array(), 400);
+            return $this->sendResponses(false, $validator->getMessageBag()->first(), array(), 400);
         }
 
         $response = app()->make(CognitoClient::class)->confirmRegister($data['email'], $data['verification_code']);
         if($response === 1){
             User::where('email', $data['email'])->update(['status' => 1]);
-            return $this->sendResponse(true, 'User email verified successfully', [], 200); 
+            return $this->sendResponses(true, 'User email verified successfully', [], 200); 
         }else{
-            return $this->sendResponse(false, 'error', $response, 400);
+            return $this->sendResponses(false, 'error', $response, 400);
         }
 
         return false;
@@ -90,9 +90,11 @@ trait congnitoUser
         $user = User::where('email', $data['email'])->first();
         $result = app()->make(CognitoClient::class)->authenticate($data['email'], $data['password']);
         if (is_array($result)) {
-            return $this->sendResponse(true, 'User logged in successfully.', $result, 200);   
+            $result = $result['AuthenticationResult'];
+            $result['user_id'] = $user->id;
+            return $this->sendResponses(true, 'User logged in successfully.', $result, 200);   
         }else{
-            return $this->sendResponse(false, 'Error', $result, 400);
+            return $this->sendResponses(false, 'Error', $result, 400);
         }
     }
 
@@ -100,9 +102,9 @@ trait congnitoUser
     {
         $result = app()->make(CognitoClient::class)->changePassword($accessToken, $oldPassword, $newPassword);
         if ($result == 1) {
-            return $this->sendResponse(true, 'Password changed successfully.', $result, 200);
+            return $this->sendResponses(true, 'Password changed successfully.', $result, 200);
         }
-        return $this->sendResponse(true, 'Something went wrong, Try again.', $result, 200);
+        return $this->sendResponses(true, 'Something went wrong, Try again.', $result, 200);
     }
 
     public function resendConfirmationCode($email)
@@ -110,9 +112,9 @@ trait congnitoUser
 
         $result = app()->make(CognitoClient::class)->resendConfirmationCode($email);
         if (isset($result)) {
-            return $this->sendResponse(true, 'Verification code sent successfully.', [], 200);
+            return $this->sendResponses(true, 'Verification code sent successfully.', [], 200);
         }else{
-            return $this->sendResponse(false, 'error', $result, 400);
+            return $this->sendResponses(false, 'error', $result, 400);
         }
     }
 
@@ -121,9 +123,9 @@ trait congnitoUser
 
         $result =  app()->make(CognitoClient::class)->sendResetLink($email);
         if($result) {
-            return $this->sendResponse(true, 'Verification code sent successfully.', $result, 200);
+            return $this->sendResponses(true, 'Verification code sent successfully.', $result, 200);
         }else{
-            return $this->sendResponse(true, 'error', $result, 200);
+            return $this->sendResponses(true, 'error', $result, 200);
         }
 
     }
